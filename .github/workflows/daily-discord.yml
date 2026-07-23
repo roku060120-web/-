@@ -1,0 +1,19 @@
+name: 今日の授業をDiscordに投稿
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # 毎日 12:00 JST（= 03:00 UTC）
+  workflow_dispatch:        # 手動実行ボタン（テスト用）
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 今日の授業を投稿
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: python post_schedule.py
