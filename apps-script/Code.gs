@@ -42,7 +42,7 @@ function postToday() {
 
   let lessons = [];
   tt.forEach(function (r) {
-    if (String(r[0]).trim() !== dow) return;
+    if (String(r[0]).trim().charAt(0) !== dow) return; // 「火」でも「火曜日」でも一致
     const teacher = String(r[2]).trim(), student = String(r[3]).trim();
     if (cancels[teacher + '|' + student]) return;
     lessons.push({ 時間: tstr_(r[1]), 講師: teacher, 生徒: student,
