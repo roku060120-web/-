@@ -38,7 +38,13 @@ def main():
     content = build_message()
     data = json.dumps({"content": content}).encode("utf-8")
     req = urllib.request.Request(
-        webhook, data=data, headers={"Content-Type": "application/json"}
+        webhook,
+        data=data,
+        headers={
+            "Content-Type": "application/json",
+            # DiscordのCloudflareがデフォルトUAを403で弾くため、UAを明示する
+            "User-Agent": "juku-schedule-bot/1.0 (+github-actions)",
+        },
     )
     with urllib.request.urlopen(req) as resp:
         print("Discordへ投稿しました:", resp.status)
