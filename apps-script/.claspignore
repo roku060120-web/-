@@ -1,0 +1,4 @@
+# clasp push で送るのは Code.gs と appsscript.json のみ
+**/**
+!Code.gs
+!appsscript.json
