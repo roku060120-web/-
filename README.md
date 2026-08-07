@@ -1,3 +1,7 @@
+> このリポジトリには2つの独立したプロジェクトが入っています。
+> - **塾スケジュール**（このREADME）… `apps-script/` `juku-schedule/`
+> - **大学 出席記録**（iPhoneショートカット連携）… [`univ-attendance/`](univ-attendance/README.md)
+
 # 今日の授業をDiscordに自動投稿（Google Apps Script版）
 
 毎日 **12:00（日本時間）** に、その日の授業一覧を Discord に自動投稿します。
