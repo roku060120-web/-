@@ -1,0 +1,6 @@
+# 個人データ・端末固有の状態は外部に一切出さない（PLAN.md 00章の決定事項）
+/data/
+*.pdf
+*.csv
+.env
+standalone-personal.html

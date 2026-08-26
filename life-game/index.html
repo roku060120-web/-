@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d1210">
+<title>LIFE GAME // TACTICAL OPS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0f0c'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%239dc05a' stroke-width='2'/%3E%3Cpath d='M16 2v8M16 22v8M2 16h8M22 16h8' stroke='%237f8f5a' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23d8a33c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ============ ①登録フェーズ ============ -->
+<div class="enlist" id="enlist" hidden></div>
+
+<!-- ============ TOP HUD ============ -->
+<header class="hud">
+  <div class="hud-l">
+    <span class="sig"></span>
+    <span class="callsign" id="callsign">OPERATOR // RECRUIT</span>
+  </div>
+  <div class="hud-r">
+    <button class="hud-cloud" id="hudCloud" aria-label="クラウド同期">☁ LOGIN</button>
+    <span class="hud-date" id="hudDate">--/--</span>
+    <span class="hud-clock" id="hudClock">--:--:--</span>
+  </div>
+</header>
+
+<!-- ============ SLIDING VIEWPORT ============ -->
+<main class="viewport" id="viewport">
+  <div class="rail" id="rail">
+
+    <!-- ---------- PAGE 1 : STATUS ---------- -->
+    <section class="page" data-page="status">
+      <div class="page-inner">
+        <h1 class="page-title"><span class="tick">01</span>STATUS<small>状況報告</small></h1>
+
+        <div class="grid-3">
+          <!-- FUNDS -->
+          <div class="panel bracket" id="fundsCard">
+            <div class="panel-head"><span>FUNDS</span><em>所持金</em></div>
+            <div class="big-num"><span class="unit">¥</span><span id="fundsVal">0</span></div>
+            <div class="bar"><div class="bar-fill" id="fundsBar"></div></div>
+            <div class="panel-foot">
+              <span id="fundsDelta" class="delta">±0 / 7DAYS</span>
+              <button class="mini-btn" data-act="edit-funds">LOG</button>
+            </div>
+          </div>
+
+          <!-- CREDITS -->
+          <div class="panel bracket" id="creditCard">
+            <div class="panel-head"><span>CREDITS</span><em>取得単位</em></div>
+            <div class="big-num"><span id="creditVal">0</span><span class="unit sm">/<span id="creditReq">124</span></span></div>
+            <div class="bar"><div class="bar-fill ok" id="creditBar"></div></div>
+            <div class="panel-foot">
+              <span id="creditPct" class="delta">0% CLEARED</span>
+              <button class="mini-btn" data-act="edit-credit">EDIT</button>
+            </div>
+          </div>
+
+          <!-- HEALTH -->
+          <div class="panel bracket" id="healthCard">
+            <div class="panel-head"><span>HEALTH</span><em>平均睡眠</em></div>
+            <div class="big-num"><span id="sleepVal">0.0</span><span class="unit sm">H</span></div>
+            <div class="bar"><div class="bar-fill" id="sleepBar"></div></div>
+            <div class="panel-foot">
+              <span id="sleepState" class="delta">NO DATA</span>
+              <button class="mini-btn" data-act="log-sleep">REC</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- REQUIREMENTS -->
+        <div class="panel bracket" id="reqPanel" hidden>
+          <div class="panel-head"><span>GRADUATION REQUIREMENTS</span><em>卒業要件</em></div>
+          <div class="buckets" id="buckets"></div>
+          <div class="bucket-legend">
+            <span><i class="sw ok"></i>取得</span>
+            <span><i class="sw wip"></i>履修中</span>
+            <span><i class="sw fail"></i>不合格（再履修）</span>
+          </div>
+        </div>
+
+        <!-- SLEEP SPARK -->
+        <div class="panel bracket">
+          <div class="panel-head"><span>VITALS / 7-DAY SLEEP LOG</span><em>睡眠記録</em></div>
+          <div class="spark" id="sleepSpark"></div>
+        </div>
+
+        <!-- WEEKLY SCHEDULE -->
+        <div class="panel bracket">
+          <div class="panel-head">
+            <span>WEEKLY SCHEDULE</span><em>週次予定</em>
+            <button class="mini-btn right" data-act="add-sched">+ ADD</button>
+          </div>
+          <div class="week-scroll"><div class="week" id="week"></div></div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat"><b id="statDone">0</b><span>MISSIONS CLEARED</span></div>
+          <div class="stat"><b id="statOpen">0</b><span>ACTIVE OPS</span></div>
+          <div class="stat"><b id="statUrgent">0</b><span>DEADLINE &lt;48H</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE 2 : TASKS ---------- -->
+    <section class="page" data-page="tasks">
+      <div class="page-inner">
+        <h1 class="page-title"><span class="tick">02</span>OPERATIONS<small>任務一覧</small></h1>
+
+        <div class="panel bracket" id="gapPanel" hidden>
+          <div class="panel-head"><span>STORY</span><em>卒業へのストーリー</em></div>
+          <div class="gap-list" id="gapList"></div>
+        </div>
+
+        <div class="filters" id="filters">
+          <button class="chip active" data-filter="ALL">ALL</button>
+          <button class="chip" data-filter="必須">必須</button>
+          <button class="chip" data-filter="サブ">サブ</button>
+          <button class="chip" data-filter="余暇">余暇</button>
+        </div>
+
+        <div class="task-list" id="taskList"></div>
+        <div class="empty" id="taskEmpty">// NO ACTIVE OPERATIONS //</div>
+      </div>
+      <button class="fab" data-act="add-task" aria-label="タスク追加">+</button>
+    </section>
+
+    <!-- ---------- PAGE 3 : PERSONS ---------- -->
+    <section class="page" data-page="persons">
+      <div class="page-inner net-inner">
+        <h1 class="page-title"><span class="tick">03</span>NETWORK<small>人物関係図</small></h1>
+        <div class="net-wrap panel bracket">
+          <canvas id="netCanvas"></canvas>
+          <div class="net-legend">
+            <span><i class="dot fam"></i>FAMILY</span>
+            <span><i class="dot uni"></i>UNIV</span>
+            <span><i class="dot job"></i>WORK</span>
+            <span><i class="dot cir"></i>CIRCLE</span>
+          </div>
+        </div>
+        <div class="person-card panel bracket" id="personCard">
+          <div class="empty small">// SELECT A NODE //</div>
+        </div>
+      </div>
+      <button class="fab" data-act="add-person" aria-label="人物追加">+</button>
+    </section>
+
+    <!-- ---------- PAGE 4 : CREDITS MAP ---------- -->
+    <section class="page" data-page="credits">
+      <div class="page-inner map-inner">
+        <h1 class="page-title"><span class="tick">04</span>CREDITS<small>作戦マップ</small></h1>
+
+        <div class="panel bracket map-summary" id="mapSummary" hidden>
+          <div class="panel-head"><span>OVERALL</span><em>卒業までの充足率</em></div>
+          <div class="big-num"><span id="mapEarned">0</span><span class="unit sm">/<span id="mapNeed">128</span></span></div>
+          <div class="bar"><div class="bar-fill ok" id="mapBar"></div></div>
+        </div>
+
+        <div class="map-wrap panel bracket" id="mapWrap" hidden>
+          <canvas id="mapCanvas"></canvas>
+        </div>
+
+        <div class="map-legend" id="mapLegend" hidden>
+          <span><i class="ms earned"></i>取得済み</span>
+          <span><i class="ms wip"></i>履修中</span>
+          <span><i class="ms avail"></i>履修可能</span>
+          <span><i class="ms fail"></i>不合格（再履修）</span>
+          <span><i class="ms none"></i>未取得</span>
+        </div>
+
+        <div class="empty" id="mapEmpty">// 詳細な卒業要件データがありません //<br>登録フェーズで解析済みデータを使用してください</div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ PAGE NAV ============ -->
+<nav class="pager">
+  <button class="pg-arrow" data-nav="-1" aria-label="前">◀</button>
+  <div class="dots" id="dots"></div>
+  <button class="pg-arrow" data-nav="1" aria-label="次">▶</button>
+</nav>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modalBg" hidden>
+  <div class="modal bracket" role="dialog" aria-modal="true">
+    <div class="modal-head"><span id="modalTitle">FORM</span><button class="x" data-act="close-modal">✕</button></div>
+    <form id="modalForm" class="modal-body"></form>
+    <div class="modal-foot">
+      <button class="btn ghost" data-act="close-modal" type="button">CANCEL</button>
+      <button class="btn" type="submit" form="modalForm">CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="data/preset.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/status.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/network.js"></script>
+<script src="js/credits.js"></script>
+<script src="js/onboarding.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
