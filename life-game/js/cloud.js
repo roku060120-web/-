@@ -36,6 +36,12 @@ const Cloud = (() => {
     return error ? error.message : null;
   }
 
+  async function verifyCode(email, code) {
+    if (!client) return 'クラウド機能が読み込まれていません';
+    const { error } = await client.auth.verifyOtp({ email, token: code, type: 'email' });
+    return error ? error.message : null;
+  }
+
   async function signOut() {
     if (client) await client.auth.signOut();
     session = null;
@@ -62,7 +68,7 @@ const Cloud = (() => {
   }
 
   return {
-    init, sendMagicLink, signOut, pull, push,
+    init, sendMagicLink, verifyCode, signOut, pull, push,
     isLoggedIn: () => !!session,
     userEmail: () => (session ? session.user.email : null),
     onAuth: (fn) => listeners.push(fn)

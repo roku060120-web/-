@@ -135,6 +135,40 @@
     hudCloudBtn.textContent = on ? ('☁ ' + Cloud.userEmail().split('@')[0]) : '☁ LOGIN';
     hudCloudBtn.classList.toggle('on', on);
   }
+  function openLoginStep1() {
+    UI.openModal({
+      title: 'CLOUD // ログイン',
+      fields: [
+        { name: 'email', label: 'メールアドレス', type: 'email', required: true, placeholder: '例: you@example.com' }
+      ],
+      submitLabel: 'SEND CODE',
+      onSubmit: async (d) => {
+        UI.toast('送信中...');
+        const err = await Cloud.sendMagicLink(d.email);
+        if (err) { UI.toast('送信失敗: ' + err); return; }
+        UI.toast('メールを送信しました');
+        openLoginStep2(d.email);
+      }
+    });
+  }
+  function openLoginStep2(email) {
+    UI.openModal({
+      title: 'CLOUD // 確認コード入力',
+      html: `
+        <p class="hint">${UI.esc(email)} に届いたメール内の6桁コードを入力してください
+          （メール内のリンクをそのまま開いても構いません）。</p>
+        <div class="field">
+          <label>確認コード</label>
+          <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" required>
+        </div>`,
+      submitLabel: 'VERIFY',
+      onSubmit: async (d) => {
+        UI.toast('確認中...');
+        const err = await Cloud.verifyCode(email, (d.code || '').trim());
+        if (err) UI.toast('認証失敗: ' + err);
+      }
+    });
+  }
   hudCloudBtn.addEventListener('click', () => {
     if (Cloud.isLoggedIn()) {
       UI.openModal({
@@ -146,18 +180,7 @@
         onSubmit: async () => { await Cloud.signOut(); }
       });
     } else {
-      UI.openModal({
-        title: 'CLOUD // ログイン',
-        fields: [
-          { name: 'email', label: 'メールアドレス', type: 'email', required: true, placeholder: '例: you@example.com' }
-        ],
-        submitLabel: 'SEND LINK',
-        onSubmit: async (d) => {
-          UI.toast('送信中...');
-          const err = await Cloud.sendMagicLink(d.email);
-          UI.toast(err ? ('送信失敗: ' + err) : 'メールを送信しました。届いたリンクを開いてください');
-        }
-      });
+      openLoginStep1();
     }
   });
   let bootDone = false;
